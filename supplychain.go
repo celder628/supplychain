@@ -36,7 +36,7 @@ type SimpleChaincode struct {
 
 // Init callback representing the init of a chaincode
 func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
-	var shipmentID, aodXML string // Entities
+	var shipmentID, shipmentDocuments string // Entities
 	var err error
 
 	if len(args) != 2 {
@@ -45,11 +45,11 @@ func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args [
 
 	// Initialize the chaincode
 	shipmentID = args[0]
-	aodXML = args[1]
-	fmt.Printf("shipmentID = %s, aodXML = %s\n", shipmentID, aodXML)
+	shipmentDocuments = args[1]
+	fmt.Printf("shipmentID = %s, shipmentDocuments = %s\n", shipmentID, shipmentDocuments)
 
 	// Write the state to the ledger
-	err = stub.PutState(shipmentID, []byte(aodXML))
+	err = stub.PutState(shipmentID, []byte(shipmentDocuments))
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args [
 // Invoke callback representing the query of a chaincode
 func (t *SimpleChaincode) Invoke(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
 
-	var shipmentID, aodXML string // Entities
+	var shipmentID, shipmentDocuments string // Entities
 	var err error
 
 	if len(args) != 2 {
@@ -68,11 +68,11 @@ func (t *SimpleChaincode) Invoke(stub *shim.ChaincodeStub, function string, args
 	}
 
 	shipmentID = args[0]
-	aodXML = args[1]
+	shipmentDocuments = args[1]
 
-	fmt.Printf("Shipment ID submitted with AOD.  shipmentID = %s, aodXML = %s\n", shipmentID, aodXML)
+	fmt.Printf("Shipment ID submitted with shipment documents.  shipmentID = %s, shipmentDocuments = %s\n", shipmentID, shipmentDocuments)
 
-	err = stub.PutState(shipmentID, []byte(aodXML))
+	err = stub.PutState(shipmentID, []byte(shipmentDocuments))
 	if err != nil {
 		return nil, err
 	}
@@ -95,20 +95,20 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 	shipmentID = args[0]
 
 	// Get the state from the ledger
-	aodXMLbytes, err := stub.GetState(shipmentID)
+	shipmentDocuments, err := stub.GetState(shipmentID)
 	if err != nil {
 		jsonResp := "{\"Error\":\"Failed to get state for " + shipmentID + "\"}"
 		return nil, errors.New(jsonResp)
 	}
 
-	if aodXMLbytes == nil {
+	if shipmentDocuments == nil {
 		jsonResp := "{\"Error\":\"Nil amount for " + shipmentID + "\"}"
 		return nil, errors.New(jsonResp)
 	}
 
-	jsonResp := "{\"shipmentID\":\"" + shipmentID + "\",\"AOD\":\"" + string(aodXMLbytes) + "\"}"
+	jsonResp := shipmentDocuments
 	fmt.Printf("Query Response:%s\n", jsonResp)
-	return aodXMLbytes, nil
+	return shipmentDocuments, nil
 }
 
 func main() {
