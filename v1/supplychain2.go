@@ -84,6 +84,39 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) ([]byte, erro
 	return nil, nil
 }
 
+// Query callback representing the query of a chaincode
+func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface) ([]byte, error) {
+	function, args := stub.GetFunctionAndParameters()
+
+	if function != "query" {
+		return nil, errors.New("Invalid query function name. Expecting \"query\"")
+	}
+	var shipmentID string // Entities
+	var err error
+
+	if len(args) != 1 {
+		return nil, errors.New("Incorrect number of arguments. Expecting the shipmentID")
+	}
+
+	shipmentID = args[0]
+
+	// Get the state from the ledger
+	shipmentDocuments, err := stub.GetState(shipmentID)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for " + shipmentID + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+
+	if shipmentDocuments == nil {
+		jsonResp := "{\"Error\":\"Nil amount for " + shipmentID + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+
+	jsonResp := shipmentDocuments
+	fmt.Printf("Query Response:%s\n", jsonResp)
+	return shipmentDocuments, nil
+}
+
 func main() {
 	err := shim.Start(new(SimpleChaincode))
 	if err != nil {
